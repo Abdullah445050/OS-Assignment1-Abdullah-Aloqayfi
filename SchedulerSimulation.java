@@ -151,6 +151,8 @@ class Process implements Runnable {
 }
 
 public class SchedulerSimulation {
+    private static int contextSwitches = 0; // Feature 2
+
     public static void main(String[] args) {
         // ⚠️ IMPORTANT: Put your student ID here to seed the random number generator
         // This makes your output unique to you - DO NOT forget to change this!
@@ -247,6 +249,7 @@ public class SchedulerSimulation {
             System.out.println(Colors.BOLD + Colors.MAGENTA + "└" + "─".repeat(79) + Colors.RESET + "\n");
 
             // Start the thread, which will run the process for one time quantum
+            contextSwitches++; // Feature 2
             currentThread.start();
 
             try {
@@ -288,6 +291,8 @@ public class SchedulerSimulation {
         System.out.println(Colors.BOLD + Colors.BRIGHT_GREEN +
                 "╚════════════════════════════════════════════════════════════════════════════════╝" +
                 Colors.RESET + "\n");
+
+        System.out.println("Total context switches: " + contextSwitches); // Feature 2
     }
 
     // Method to add a process to the queue and map, while printing a "ready"
@@ -310,5 +315,6 @@ public class SchedulerSimulation {
                 " │ Priority: " + Colors.BRIGHT_YELLOW + process.getPriority() +
                 Colors.RESET + " │ Burst time: " + Colors.YELLOW + process.getBurstTime() + "ms" +
                 Colors.RESET);
+
     }
 }
