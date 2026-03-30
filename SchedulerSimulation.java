@@ -3,6 +3,8 @@ import java.util.Queue;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
 
 // ANSI Color Codes for enhanced terminal output
 class Colors {
@@ -30,6 +32,9 @@ class Process implements Runnable {
     private int timeQuantum; // Time slice (time quantum) allowed per CPU access (in milliseconds)
     private int remainingTime; // Time left for the process to finish its execution
     private int priority;
+    private long creationTime; // Feature 3
+    private long totalWaitingTime; // Feature 3
+    private long lastEnqueueTime; // Feature 3
 
     // Constructor to initialize the process with name, burst time, and time quantum
     public Process(String name, int burstTime, int timeQuantum, int priority) {
@@ -38,6 +43,9 @@ class Process implements Runnable {
         this.timeQuantum = timeQuantum;
         this.remainingTime = burstTime; // Initially, remaining time is equal to the burst time
         this.priority = priority;
+        this.creationTime = System.currentTimeMillis(); // Feature 3
+        this.totalWaitingTime = 0; // Feature 3
+        this.lastEnqueueTime = this.creationTime; // Feature 3
     }
 
     // This method will be called when the thread for this process is started
@@ -46,6 +54,7 @@ class Process implements Runnable {
         // Simulate running for either the time quantum or remaining time, whichever is
         // smaller
         int runTime = Math.min(timeQuantum, remainingTime); // Run for the smaller of the two times
+        totalWaitingTime += System.currentTimeMillis() - lastEnqueueTime;// Feature 3
 
         // Show quantum execution starting
         String quantumBar = createProgressBar(0, 15);
@@ -144,6 +153,14 @@ class Process implements Runnable {
         return priority;
     }
 
+    public long getTotalWaitingTime() { // Feature 3
+        return totalWaitingTime;
+    }
+
+    public void markEnqueued() { // Feature 3
+        lastEnqueueTime = System.currentTimeMillis();
+    }
+
     // Check if the process has finished (i.e., no remaining time)
     public boolean isFinished() {
         return remainingTime <= 0;
@@ -159,6 +176,7 @@ public class SchedulerSimulation {
         int studentID = 445050222; // ← CHANGE THIS TO YOUR ACTUAL STUDENT ID
 
         Random random = new Random(studentID);
+        List<Process> allProcesses = new ArrayList<>();
 
         // Define the time quantum in milliseconds (the maximum time a process gets in
         // one round)
@@ -209,9 +227,12 @@ public class SchedulerSimulation {
 
             // Create a new process object with a unique name, burst time, and the defined
             // time quantum
-            Process process = new Process("P" + i, burstTime, timeQuantum, priority);
+            Process process = new Process("P" + i, burstTime, timeQuantum, priority); // Feature 3
+            allProcesses.add(process); // Feature 3
+
             // Add the process to the ready queue and the map
-            addProcessToQueue(process, processQueue, processMap);
+            addProcessToQueue(process, processQueue, processMap); // Feature 3
+
         }
 
         // Start of the scheduler simulation
@@ -293,6 +314,18 @@ public class SchedulerSimulation {
                 Colors.RESET + "\n");
 
         System.out.println("Total context switches: " + contextSwitches); // Feature 2
+        System.out.println();
+        System.out.println("Waiting Time Summary");
+        System.out.println("---------------------------------------------");
+        System.out.printf("%-12s %-15s %-15s%n", "Process", "Burst Time", "Waiting Time");
+        System.out.println("---------------------------------------------");
+
+        for (Process p : allProcesses) {
+            System.out.printf("%-12s %-15d %-15d%n",
+                    p.getName(),
+                    p.getBurstTime(),
+                    p.getTotalWaitingTime());
+        }
     }
 
     // Method to add a process to the queue and map, while printing a "ready"
@@ -300,6 +333,7 @@ public class SchedulerSimulation {
     public static void addProcessToQueue(Process process, Queue<Thread> processQueue,
             Map<Thread, Process> processMap) {
         // Create a new thread to run the process
+        process.markEnqueued(); // Feature 3
         Thread thread = new Thread(process);
 
         // Add the thread to the ready queue
