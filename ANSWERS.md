@@ -11,7 +11,8 @@ Answer all 4 questions with detailed explanations. Each answer should be **3-5 s
 
 **Your Answer:**
 
-[Write your answer here. Consider: What is a process? What is a thread? How do they differ in terms of memory, resources, creation overhead? Why are threads more suitable for this simulation?]
+A process is an independent program with its own memory space and system resources, while a thread is a smaller unit of execution that runs inside a process. Threads are lighter than processes because they share memory with other threads in the same program, which makes them faster to create and easier to coordinate. In this assignment, threads were more suitable because the scheduler simulation needs many tasks to be created, started, paused, and re-queued efficiently. The code creates a new `Thread` for each process and manages them through a ready queue, which is simpler and more efficient than creating separate operating system processes. This makes the Round-Robin simulation practical and keeps the scheduling logic focused on CPU sharing rather than process management.
+
 
 ---
 
@@ -21,15 +22,21 @@ Answer all 4 questions with detailed explanations. Each answer should be **3-5 s
 
 **Your Answer:**
 
-[Write your answer here. Describe the specific behavior - where does the process go? When does it run again? Give an example from your actual program output showing a process that was re-queued.]
+In Round-Robin scheduling, if a process does not finish within its time quantum, it gives up the CPU and returns to the ready queue. This allows other processes to run before the same process gets another turn, which improves fairness. In my output, this happened with P1: it executed for 3000ms, still had 2005ms remaining, yielded the CPU, and was added back to the ready queue. The same pattern also happened with several other processes such as P2, P3, P9, and P11, which shows the scheduler is rotating processes fairly.
 
 Example from my output:
-```
-[Paste a relevant snippet from your program output here showing a process being re-queued]
+```text
+? P1 executing quantum [3000ms]
+? Quantum progress: [???????????????] 100%
+? P1 completed quantum 3000ms ? Overall progress: [????????????????????] 59%
+   Remaining time: 2005ms
+? P1 yields CPU for context switch
+
+? P1 added to ready queue ? Priority: 1 ? Burst time: 5005ms
 ```
 
 **Explanation of example:**
-[Explain what's happening in the output snippet you pasted]
+This snippet shows that P1 was allowed to run only for one time quantum, which was 3000ms. Since its total burst time was 5005ms, it still had 2005ms left after the first turn, so it could not finish in one run. The scheduler then re-added P1 to the ready queue so other processes could execute first. This re-queueing behavior is important because it prevents one long process from monopolizing the CPU and gives all processes a fair chance to progress.
 
 ---
 
@@ -39,17 +46,17 @@ Example from my output:
 
 **Your Answer:**
 
-[Write your answer here. For each state, explain when P1 enters that state during the simulation. Use your understanding of the code to trace through the lifecycle.]
+For P1, the thread begins in the New state when the program creates it with `new Thread(process)` inside the scheduler before it starts execution. It becomes Runnable when thread.start() is called, meaning it is ready to run and waiting for CPU scheduling. It enters the Running state when the scheduler actually gives it CPU time and the run() method starts executing, which is visible in the output when P1 begins its quantum. During execution, the thread can be considered in a Waiting or timed-waiting situation when Thread.sleep() is used to simulate the passage of execution time. Finally, P1 reaches the Terminated state after its remaining time becomes 0, which is shown in the output when P1 finishes its last quantum and the program prints P1 finished execution!
 
-1. **New**: [When is P1 in New state?]
+1. **New**: P1 is in the New state when its thread is created but before start() is called
 
-2. **Runnable**: [When does P1 become Runnable?]
+2. **Runnable**: P1 becomes Runnable after thread.start() and waits for its turn in the scheduler.
 
-3. **Running**: [When is P1 Running?]
+3. **Running**: P1 is Running when the output shows P1 executing quantum [3000ms] and later P1 executing quantum [2005ms]
 
-4. **Waiting**: [When/why would P1 be Waiting?]
+4. **Waiting**: P1 enters a waiting or timed-waiting state during the simulated execution period when Thread.sleep() is used inside the code.
 
-5. **Terminated**: [When is P1 Terminated?]
+5. **Terminated**: P1 is Terminated after its second execution when the output shows Remaining time: 0ms followed by P1 finished execution!
 
 ---
 
@@ -59,31 +66,31 @@ Example from my output:
 
 **Your Answer:**
 
-### Example 1: [Name of application/scenario]
+### Example 1: Web Server
 
 **Description**: 
-[Describe the real-world scenario or application]
+A web server often handles many client requests at the same time, and each request can be processed by a separate thread.
 
 **Why Round-Robin works well here**: 
-[Explain why Round-Robin scheduling is suitable. Consider fairness, responsiveness, predictability, etc.]
+Round-Robin helps ensure that no single request uses the CPU for too long while other requests are waiting. This improves fairness and keeps the server responsive, especially when many users connect at the same time. The idea is similar to this assignment, where each process gets a limited time quantum and then returns to the queue if it still needs more CPU time.
 
-### Example 2: [Name of application/scenario]
+### Example 2: Operating System Task Scheduling
 
 **Description**: 
-[Describe the real-world scenario or application]
+An operating system may run many interactive programs at once, such as a browser, media player, editor, and background services
 
 **Why Round-Robin works well here**: 
-[Explain why Round-Robin scheduling is suitable. Consider fairness, responsiveness, predictability, etc.]
+Round-Robin is useful because it gives each task a fair share of CPU time and prevents starvation. It is especially good for interactive systems because users expect all programs to remain responsive instead of one program blocking the others. This is exactly what happened in the simulation, where 20 processes shared the CPU using a fixed 3000ms time quantum and the scheduler recorded 41 context switches before all processes completed
 
 ---
 
 ## Summary
 
 **Key concepts I understood through these questions:**
-1. 
-2. 
-3. 
+1. The difference between a process and a thread, especially in terms of memory sharing and overhead
+2. How Round-Robin scheduling re-queues unfinished processes to maintain fairness.
+3. How a thread moves through states such as New, Runnable, Running, Waiting, and Terminated during execution
 
 **Concepts I need to study more:**
-1. 
-2. 
+1.  Thread synchronization and race conditions
+2.  More advanced scheduling algorithms and how they compare with Round-Robin
